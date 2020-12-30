@@ -1,19 +1,25 @@
-var broker = document.getElementById("broker").value;
-var client = mqtt.connect(broker)
-var connectedBroker = false;
+var connection = false;
+var client;
 function connect() {
     document.getElementById("status").value = "Connecting ...";
+    var broker = document.getElementById("broker").value;
+    client = mqtt.connect(broker)
     client.on("connect", () => {
+        connection = true;
         document.getElementById("status").value = "Connected!";
-        connectedBroker = true;
         console.log("Connected to " + broker);
     });
+
+    client.on('message', function (topic, message) {
+        console.log(message.toString())
+        document.getElementById('m-table').innerHTML += `<tr><td>${topic}</td><td>${message}</td><td>${getDate()}</td></tr>`
+    })
 }
 
 function publish() {
     if (
         document.getElementById("topic").value != "" &&
-        document.getElementById("payload").value != "" && connectedBroker
+        document.getElementById("payload").value != "" && connection
     ) {
         var topic = document.getElementById("topic").value;
         var payload = document.getElementById("payload").value
@@ -23,13 +29,8 @@ function publish() {
     }
 }
 
-client.on('message', function (topic, message) {
-    console.log(message.toString())
-    document.getElementById('m-table').innerHTML += `<tr><td>${topic}</td><td>${message}</td><td>${getDate()}</td></tr>`
-})
-
 function subscribe() {
-    if (document.getElementById('s-topic').value != "" && connectedBroker) {
+    if (document.getElementById('s-topic').value != "" && connection) {
         client.subscribe(document.getElementById('s-topic').value, function (err) {
             if (err) {
                 console.error("Error in subscribing topic!")
