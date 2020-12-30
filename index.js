@@ -1,9 +1,8 @@
-var client;
+var broker = document.getElementById("broker").value;
+var client = mqtt.connect(broker)
 var connected = false;
 function connect() {
     document.getElementById("status").value = "Connecting ...";
-    var broker = document.getElementById("broker").value;
-    client = mqtt.connect(broker);
     client.on("connect", () => {
         document.getElementById("status").value = "Connected!";
         connected = true;
@@ -24,6 +23,11 @@ function publish() {
     }
 }
 
+client.on('message', function (topic, message) {
+    console.log(message.toString())
+    document.getElementById('m-table').innerHTML += `<tr><td>${topic}</td><td>${message}</td><td>${getDate()}</td></tr>`
+})
+
 function subscribe() {
     if (document.getElementById('s-topic').value != "" && connected) {
         client.subscribe(document.getElementById('s-topic').value, function (err) {
@@ -32,11 +36,6 @@ function subscribe() {
             } else {
                 document.getElementById("s-table").innerHTML += `<tr><td>${document.getElementById("s-topic").value
                     }</td > <td>${getDate()}</td></tr > `
-
-                client.on('message', function (topic, message) {
-                    console.log(message.toString())
-                    document.getElementById('m-table').innerHTML += `<tr><td>${topic}</td><td>${message}</td><td>${getDate()}</td></tr>`
-                })
             }
         })
     }
